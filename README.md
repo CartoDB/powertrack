@@ -108,6 +108,7 @@ u'accepted'
 Eventually, job will start processing in GNIP...
 
 ```python
+job.update()
 job.status
 u'running'
 ```
@@ -115,6 +116,7 @@ u'running'
 ...until the job is processed in GNIP
 
 ```python
+job.update()
 job.status
 u'delivered'
 ```
