@@ -163,7 +163,7 @@ class JobManager(object):
         :return:
         """
         hashtags = config.get("rules", "hashtags").split(",")
-        rules = [{"tag": hashtag} for hashtag in hashtags]
+        rules = [{"value": hashtag} for hashtag in hashtags]
 
         data = {
             "publisher": "twitter",
