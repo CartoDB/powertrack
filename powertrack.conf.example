@@ -1,0 +1,10 @@
+[credentials]
+account_name=abcd
+username=abcd@abcd.com
+password=qwerty
+
+[rules]
+hashtags=#cats,#dogs
+
+[output]
+folder=/tmp
