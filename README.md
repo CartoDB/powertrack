@@ -23,7 +23,7 @@ Get jobs:
 jobs = p.jobs.get()
 ```
 
-Get quote for a job:
+Get quote for a job (returns None is job is still being estimated in GNIP):
 
 ```python
 jobs[0].get_quote()
@@ -33,6 +33,18 @@ Get full details for a job:
 
 ```python
 jobs.get(job[0].uuid)
+```
+
+Update a job:
+
+```python
+jobs[0].update()
+```
+
+Get the status (doesn't update in GNIP automatically, so you might want to update the job first, see above):
+
+```python
+jobs[0].status
 ```
 
 Accept a job:
