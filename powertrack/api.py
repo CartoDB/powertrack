@@ -1,15 +1,12 @@
 import ConfigParser
-import csv
 import json
 import os
 import re
 import requests
 import urlparse
-from StringIO import StringIO
 from datetime import datetime
-from gzip import GzipFile
 
-from powertrack.csv_helper import tweet2csv
+from powertrack.csv_helper import build_csv_file
 
 
 config = ConfigParser.RawConfigParser()
@@ -134,20 +131,9 @@ class Job(object):
 
         r = self.pt.get(self.data_url)
         urls = r.json().get("urlList")
-        with open(os.path.join(config.get('output', 'folder'), "{filename}.csv".format(filename=self.title)), 'w') as csv_file:
-            writer = csv.writer(csv_file, dialect=csv.QUOTE_MINIMAL)
-            writer.writerow(tweet2csv())
-            for url in urls:
-                r = requests.get(url)
-                gz = GzipFile(fileobj=StringIO(r.content))
-                for line in gz:
-                    try:
-                        tweet = json.loads(line)
-                    except ValueError:
-                        continue
-                    tweet = tweet2csv(tweet)
-                    if tweet is not None:
-                        writer.writerow(tweet)
+        build_csv_file(urls,
+                       os.path.join(config.get('output', 'folder'), "{filename}.csv".format(filename=self.title)),
+                       int(config.get('output', 'num_threads')))
 
 
 class JobManager(object):

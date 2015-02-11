@@ -1,4 +1,11 @@
+import csv
 import json
+import requests
+import sys
+from gzip import GzipFile
+from Queue import Queue
+from StringIO import StringIO
+from threading import Thread
 
 
 def get_field(obj, name, default, as_json=False):
@@ -135,3 +142,74 @@ def tweet2csv(tweet=None):
         return [row[key] for key in keys]
     else:
         return sorted(row.keys())
+
+
+class GetRequestThread(Thread):
+    """
+    These threads will get a job data file, convert tweets to CSV and put them in a writer queue.
+    The number of these threads come from config file.
+    """
+    def __init__ (self, url_q, writer_q):
+        self.url_q = url_q
+        self.writer_q = writer_q
+        super(GetRequestThread, self).__init__()
+
+    def run(self):
+        while True:
+            url = self.url_q.get()
+            r = requests.get(url)
+            gz = GzipFile(fileobj=StringIO(r.content))
+            for line in gz:
+                try:
+                    tweet = json.loads(line)
+                except ValueError:
+                    continue
+                csv_tweet = tweet2csv(tweet)
+                if csv_tweet is not None:
+                    self.writer_q.put(csv_tweet)
+            self.url_q.task_done()
+
+
+class WriteTweetThread(Thread):
+    """
+    This thread (only one!!!) will take the CSV tweets from a writer queue and put them into the CSV file.
+    """
+    def __init__ (self, csv_writer, writer_q):
+        self.csv_writer = csv_writer
+        self.writer_q = writer_q
+        super(WriteTweetThread, self).__init__()
+
+    def run(self):
+        while True:
+            csv_tweet = self.writer_q.get()
+            self.csv_writer.writerow(csv_tweet)
+            self.writer_q.task_done()
+
+
+def build_csv_file(urls, file_name, num_get_request_threads):
+    csv_file = open(file_name, 'w')
+    csv_writer = csv.writer(csv_file, dialect=csv.QUOTE_MINIMAL)
+    csv_writer.writerow(tweet2csv())  # Header row
+
+    url_q = Queue()
+    writer_q = Queue()
+
+    for i in range(num_get_request_threads):
+        t = GetRequestThread(url_q, writer_q)
+        t.daemon = True
+        t.start()
+
+    t = WriteTweetThread(csv_writer, writer_q)
+    t.daemon = True
+    t.start()
+
+    try:
+        for url in urls:
+            url_q.put(url.strip())
+        url_q.join()
+        writer_q.join()
+    except KeyboardInterrupt:
+        csv_file.close()
+        sys.exit(1)
+    else:
+        csv_file.close()
