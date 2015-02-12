@@ -26,10 +26,11 @@ Update a job:
 jobs[0].update()
 ```
 
-Get the status (doesn't update in GNIP automatically, so you might want to update the job first, see above):
+Get the status (updated from GNIP automatically):
 
 ```python
 jobs[0].status
+jobs[0].status_message
 ```
 
 Accept a job:

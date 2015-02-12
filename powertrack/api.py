@@ -15,6 +15,8 @@ config.read("powertrack.conf")
 
 class Job(object):
     _quote = None
+    _status = None
+    _status_message = None
     data_url = None
 
     def __init__(self, pt, uuid=None, job_data=None):
@@ -65,8 +67,8 @@ class Job(object):
         self.to_date = datetime.strptime(job_data["toDate"], "%Y%m%d%H%M") if "toDate" in job_data else None
         self.percent_complete = job_data.get("percentComplete")
         self.publisher = job_data.get("publisher")
-        self.status = job_data.get("status")
-        self.status_message = job_data.get("statusMessage")
+        self._status = job_data.get("status")
+        self._status_message = job_data.get("statusMessage")
         self.stream_type = job_data.get("streamType")
         self.title = job_data.get("title")
         self.account = job_data.get("account")
@@ -91,7 +93,7 @@ class Job(object):
         """
         r = self.pt.put(self.job_url, data={"status": "accept"})
         self.update_fields(r.json())
-        return True if self.status == "accepted" else False
+        return True if self._status == "accepted" else False
 
     def reject(self):
         """
@@ -100,7 +102,7 @@ class Job(object):
         """
         r = self.pt.put(self.job_url, data={"status": "reject"})
         self.update_fields(r.json())
-        return True if self.status == "rejected" else False
+        return True if self._status == "rejected" else False
 
     def update(self):
         """
@@ -108,6 +110,24 @@ class Job(object):
         """
         r = self.pt.get(self.pt.build_job_url(self.uuid))
         self.update_fields(r.json())
+
+    @property
+    def status(self):
+        """
+        Return updated status from GNIP
+        """
+        r = self.pt.get(self.pt.build_job_url(self.uuid))
+        self.update_fields(r.json())
+        return self._status
+
+    @property
+    def status_message(self):
+        """
+        Return updated status message from GNIP
+        """
+        r = self.pt.get(self.pt.build_job_url(self.uuid))
+        self.update_fields(r.json())
+        return self._status_message
 
     def get_quote(self):
         """
