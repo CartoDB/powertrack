@@ -160,19 +160,18 @@ class JobManager(object):
     def __init__(self, pt):
         self.pt = pt
 
-    def create(self, from_date, to_date, title, hashtags=None):
+    def create(self, from_date, to_date, title, values=None):
         """
         Create a new job in GNIP
         :param from_date: Start timestamp
         :param to_date: End timestamp
         :param title: Title for the job
-        :param hashtags: Comma-separated string of search terms (typically, but not limited to, hashtags). If None, they'll be taken from the config
-        file.
+        :param values: Comma-separated string of search terms. If None, they'll be taken from the config file.
         :return:
         """
-        hashtags = hashtags or config.get("rules", "hashtags")
-        hashtags = hashtags.split(",")
-        rules = [{"value": hashtag} for hashtag in hashtags]
+        values = values or config.get("rules", "values")
+        values = values.split(",")
+        rules = [{"value": value} for value in values]
 
         data = {
             "publisher": "twitter",

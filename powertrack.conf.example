@@ -4,7 +4,8 @@ username=abcd@abcd.com
 password=qwerty
 
 [rules]
-hashtags=#cats,#dogs
+values=#cats,#dogs,"lovely pets"~2
 
 [output]
 folder=/tmp
+num_threads=10

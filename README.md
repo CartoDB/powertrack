@@ -54,10 +54,10 @@ jobs[0].export_tweets()
 Create a new job:
 
 ```python
-new_job = p.jobs.create(datetime(2012, 12, 12, 0, 0), datetime(2012, 12, 13, 0, 0), "newjob", "#lakers,#celtics")
+new_job = p.jobs.create(datetime(2012, 12, 12, 0, 0), datetime(2012, 12, 13, 0, 0), "newjob", "@nba,#lakers,#celtics")
 ```
 
-Params to create() are: start timestamp, end timestamp, unique title for the job, and search terms (typically, hastags). If no search terms are specified, they'll be taken from the config file.
+Params to create() are: start timestamp, end timestamp, unique title for the job, and search terms. If no search terms are specified, they'll be taken from the config file.
 
 See the rules for the start and end timestamps [here](http://support.gnip.com/apis/historical_api/api_reference.html#Create) (look for "Specifying the Correct Time Window")
 
@@ -141,6 +141,4 @@ job.export_tweets()
 
 ## TODO:
 
-* improve error handling
-* message output
 * create package
