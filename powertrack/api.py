@@ -160,18 +160,16 @@ class JobManager(object):
     def __init__(self, pt):
         self.pt = pt
 
-    def create(self, from_date, to_date, title, values=None):
+    def create(self, from_date, to_date, title, rules):
         """
         Create a new job in GNIP
         :param from_date: Start timestamp
         :param to_date: End timestamp
         :param title: Title for the job
-        :param values: Comma-separated string of search terms. If None, they'll be taken from the config file.
+        :param rules: Powertrack rules. Each rule will be ANDed with geo-enabled filter.
         :return:
         """
-        values = values or config.get("rules", "values")
-        values = values.split(",")
-        rules = [{"value": value} for value in values]
+        rules = [{"value": "({value}) (has:geo OR has:profile_geo)".format(value=rule) for rule in rules}]
 
         data = {
             "publisher": "twitter",
