@@ -33,7 +33,7 @@ jobs[0].status
 jobs[0].status_message
 ```
 
-Accept a job:
+Accept a job (*this costs money!!!*):
 
 ```python
 jobs[0].accept()
@@ -108,7 +108,7 @@ job.get_quote()
  u'quoted'
 ```
 
-Accept job:
+Accept job (*this costs money!!!*):
 
 ```python
 job.accept()
