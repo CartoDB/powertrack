@@ -54,7 +54,7 @@ jobs[0].export_tweets()
 Create a new job:
 
 ```python
-new_job = p.jobs.create(datetime(2012, 12, 12, 0, 0), datetime(2012, 12, 13, 0, 0), "newjob", "@nba,#lakers,#celtics")
+new_job = p.jobs.create(datetime(2014, 12, 12, 0, 0), datetime(2014, 12, 13, 0, 0), "newjob", ["@nba", "#lakers", "#celtics"])
 ```
 
 Params to create() are: start timestamp, end timestamp, unique title for the job, and search terms. If no search terms are specified, they'll be taken from the config file.
@@ -119,7 +119,6 @@ u'accepted'
 Eventually, job will start processing in GNIP...
 
 ```python
-job.update()
 job.status
 u'running'
 ```
