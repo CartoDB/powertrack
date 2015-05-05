@@ -2,9 +2,7 @@
 account_name=abcd
 username=abcd@abcd.com
 password=qwerty
-
-[rules]
-values=#cats,#dogs,"lovely pets"~2
+label=mygniplabel
 
 [output]
 folder=/tmp

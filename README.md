@@ -1,6 +1,35 @@
 # Powertrack importer for CartoDB
 
-## Useful methods
+## Search API
+
+### Example flow
+
+From a python console:
+
+```python
+from powertrack.api import *
+from datetime import datetime
+p = PowerTrack(api="search")
+```
+
+Create a new job:
+
+```python
+start = datetime(2014, 03, 1, 12, 00)
+end = datetime(2014, 03, 1, 12, 05)
+title = "test"
+job = p.jobs.create(start, end, title, ["#lakers"])
+```
+
+Export tweets to a CSV file named after the job title ("test" in this case) and placed in the folder defined in the config file.
+
+```python
+job.export_tweets()
+```
+
+## Historical API
+
+### Useful methods
 
 Get jobs:
 
@@ -57,18 +86,18 @@ Create a new job:
 new_job = p.jobs.create(datetime(2014, 12, 12, 0, 0), datetime(2014, 12, 13, 0, 0), "newjob", ["@nba", "#lakers", "#celtics"])
 ```
 
-Params to create() are: start timestamp, end timestamp, unique title for the job, and search terms. If no search terms are specified, they'll be taken from the config file.
+Params to create() are: start timestamp, end timestamp, unique title for the job, and search terms.
 
 See the rules for the start and end timestamps [here](http://support.gnip.com/apis/historical_api/api_reference.html#Create) (look for "Specifying the Correct Time Window")
 
-## Example flow
+### Example flow
 
 From a python console:
 
 ```python
-from powertrack.api import *
+from powertrack.historical_api import *
 from datetime import datetime
-p = PowerTrack()
+p = PowerTrack(api="historical")  # This is the default API, so p = PowerTrack(api="historical") works as well
 ```
 
 Add a new job:
