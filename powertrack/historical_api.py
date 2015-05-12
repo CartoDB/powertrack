@@ -176,7 +176,10 @@ class JobManager(object):
         :param rules: Powertrack rules. Each rule will be ANDed with geo-enabled filter.
         :return:
         """
-        rules = [{"value": "({value}) (has:geo OR has:profile_geo)".format(value=rule) for rule in rules}]
+        rule_list = []
+        for val in rules:
+            rule_list_item = {"value": "(" + val + ") (has:geo OR has:profile_geo)"}
+            rule_list.append(rule_list_item)
 
         data = {
             "publisher": "twitter",
@@ -185,7 +188,7 @@ class JobManager(object):
             "fromDate": from_date.strftime("%Y%m%d%H%M"),
             "toDate": to_date.strftime("%Y%m%d%H%M"),
             "title": title,
-            "rules": rules,
+            "rules": rule_list,
         }
 
         r = self.pt.post("jobs", data)
