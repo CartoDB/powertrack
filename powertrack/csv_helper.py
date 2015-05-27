@@ -53,7 +53,7 @@ def get_the_geom(tweet):
             return json.dumps(the_geom)
 
 
-def tweet2csv(tweet=None):
+def tweet2csv(tweet=None, category_name=None, category_terms=None):
     """
     Turn a tweet in json format into a CSV row.
     :param tweet: Tweet in json format. If None, header row will be returned.
@@ -70,11 +70,11 @@ def tweet2csv(tweet=None):
     tweet = tweet or {}
 
     actor = tweet.get("actor", {})
-    category = tweet.get("category", {})
     generator = tweet.get("generator", {})
     location = tweet.get("location", {})
     object = tweet.get("object", {})
     provider = tweet.get("provider", {})
+    category = {"name": category_name, "terms": category_terms}
 
     row = {
         "actor_displayname": get_field(actor, "displayName", ""),
@@ -96,8 +96,8 @@ def tweet2csv(tweet=None):
         "actor_utcoffset": get_field(actor, "utcOffset", 0),
         "actor_verified": get_field(actor, "verified", False),
         "body": get_field(tweet, "body", ""),
-        "category_name": get_field(category, "name", ""),
-        "category_terms": get_field(category, "terms", ""),
+        "category_name": get_field(category, "name", "category_name"),
+        "category_terms": get_field(category, "terms", "category_terms"),
         "favoritescount": get_field(tweet, "favoritesCount", 0),
         "generator_displayname": get_field(generator, "displayName", ""),
         "generator_link": get_field(generator, "link", ""),

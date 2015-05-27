@@ -18,14 +18,18 @@ Create a new job:
 start = datetime(2014, 03, 1, 12, 00)
 end = datetime(2014, 03, 1, 12, 05)
 title = "test"
-job = p.jobs.create(start, end, title, ["#lakers"])
+job = p.jobs.create(start, end, title, ["#lakers", "#celtics"])
 ```
 
-Export tweets to a CSV file named after the job title ("test" in this case) and placed in the folder defined in the config file.
+Export tweets to a CSV file named after the job title ("test" in this case) and placed in the folder defined in the config file. Column `category_terms` on CartoDB will be `["#lakers", "#celtics"]`.
+
+`start` and `end` default to GNIP's Search API 30-day interval.
 
 ```python
-job.export_tweets()
+job.export_tweets(1)
 ```
+
+Column `category_name` on CartoDB will be 1 and a new file will be created.
 
 ## Historical API
 
@@ -165,8 +169,3 @@ Now you can export tweets to a CSV file named after the job title ("test" in thi
 ```python
 job.export_tweets()
 ```
-
-
-## TODO:
-
-* create package
