@@ -29,7 +29,7 @@ class Job(object):
         self.request_data = job_data
         self.category_terms = category_terms
         self.data_url = "search/{label}.json".format(label=config.get('credentials', 'label'))
-        self.count_url = "search/{label}/counts".format(label=config.get('credentials', 'label'))
+        self.count_url = "search/{label}/counts.json".format(label=config.get('credentials', 'label'))
 
     def export_tweets(self, category=None, append=False):
         """
@@ -80,6 +80,7 @@ class Job(object):
         """
         Gets data from GNIP and estimates tweet count for these rules
         """
+        self.request_data["bucket"] = "day"
         r = self.pt.post(self.count_url, self.request_data)
 
         return sum([hour["count"] for hour in r.json()["results"]])
@@ -99,7 +100,7 @@ class JobManager(object):
         :return:
         """
         if rules is not None:
-            terms = " OR ".join(['\"%s\"' % rule for rule in rules])
+            terms = " OR ".join(['%s' % rule for rule in rules])
             query = "({value}) (has:geo OR has:profile_geo)".format(value=terms)
         else:
             terms = None

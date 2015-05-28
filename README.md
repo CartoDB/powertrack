@@ -23,6 +23,8 @@ job = p.jobs.create(start, end, title, ["#lakers", "#celtics"])
 
 Export tweets to a CSV file named after the job title ("test" in this case) and placed in the folder defined in the config file. Column `category_terms` on CartoDB will be `["#lakers", "#celtics"]`.
 
+If the query includes double quotes, they need to be escaped with a backslash `\"`.
+
 `start` and `end` default to GNIP's Search API 30-day interval.
 
 ```python
