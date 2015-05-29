@@ -1,8 +1,24 @@
 # Powertrack importer for CartoDB
 
-## Search API
+## Installation
 
-### Example flow
+You can either clone the repo and run:
+
+```
+python setup.py install
+```
+
+or either do:
+
+```
+pip install git+ssh://git@github.com/CartoDB/powertrack.git
+```
+
+## Usage
+
+### Search API
+
+#### Example flow
 
 From a python console:
 
@@ -33,9 +49,9 @@ job.export_tweets(1)
 
 Column `category_name` on CartoDB will be 1 and a new file will be created.
 
-## Historical API
+### Historical API
 
-### Useful methods
+#### Useful methods
 
 Get jobs:
 
@@ -96,7 +112,7 @@ Params to create() are: start timestamp, end timestamp, unique title for the job
 
 See the rules for the start and end timestamps [here](http://support.gnip.com/apis/historical_api/api_reference.html#Create) (look for "Specifying the Correct Time Window")
 
-### Example flow
+#### Example flow
 
 From a python console:
 

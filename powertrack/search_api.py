@@ -90,21 +90,23 @@ class JobManager(object):
     def __init__(self, pt):
         self.pt = pt
 
-    def create(self, from_date=None, to_date=None, title="twitter_search_result", rules=None):
+    def create(self, from_date=None, to_date=None, title="twitter_search_result", rules=None, geo_enrichment=True):
         """
         Create a new job definition
         :param from_date: Start timestamp, defaults to 30 days ago
         :param to_date: End timestamp, defaults to now
         :param title: Title for the job (file name)
         :param rules: Powertrack rules (OR). Each rule will be ANDed with geo-enabled filter.
+        :param geo_enrichment: True if you want GNIP's geoenrichment
         :return:
         """
+        geo_enrichment_rule = "has:geo OR has:profile_geo" if geo_enrichment is True else "has:geo"
         if rules is not None:
             terms = " OR ".join(['%s' % rule for rule in rules])
-            query = "({value}) (has:geo OR has:profile_geo)".format(value=terms)
+            query = "({value}) ({geo_enrichment_rule})".format(value=terms, geo_enrichment_rule=geo_enrichment_rule)
         else:
             terms = None
-            query = "has:geo OR has:profile_geo"
+            query = geo_enrichment_rule
 
         data = {
             "publisher": "twitter",
