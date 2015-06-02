@@ -117,9 +117,9 @@ See the rules for the start and end timestamps [here](http://support.gnip.com/ap
 From a python console:
 
 ```python
-from powertrack.historical_api import *
+from powertrack.api import *
 from datetime import datetime
-p = PowerTrack(api="historical")  # This is the default API, so p = PowerTrack(api="historical") works as well
+p = PowerTrack(api="historical")  # This is the default API, so p = PowerTrack() works as well
 ```
 
 Add a new job:
