@@ -59,7 +59,10 @@ class Job(object):
             r = self.pt.post(self.data_url, self.request_data)
 
             if r.status_code != requests.codes.ok:
-                logging.error(r.json()["error"]["message"])
+                try:
+                    logging.error(r.json()["error"]["message"])
+                except ValueError:
+                    logging.error(r.text)
                 next_page = False
                 continue
 
