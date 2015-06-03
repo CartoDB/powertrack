@@ -60,3 +60,5 @@ target/
 
 # Config file
 powertrack.conf
+
+*.csv

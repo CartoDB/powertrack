@@ -45,11 +45,27 @@ def get_the_geom(tweet):
         return json.dumps(the_geom)
 
     try:
+        the_geom = tweet["location"]["geo"]
+    except (KeyError, TypeError, IndexError):
+        pass
+    else:
+        if the_geom["type"] == "point" or the_geom["type"] == "Point":
+            return json.dumps(the_geom)
+        elif the_geom["type"] == "polygon" or the_geom["type"] == "Polygon":
+            bbox = zip(*the_geom["coordinates"][0])
+            the_geom = {"type": "point", "coordinates": [(max(bbox[0]) + min(bbox[0])) / 2, (max(bbox[1]) + min(bbox[1])) / 2]}
+            return json.dumps(the_geom)
+
+    try:
         the_geom = tweet["gnip"]["profileLocations"][0]["geo"]
     except (KeyError, TypeError, IndexError):
         pass
     else:
         if the_geom["type"] == "point" or the_geom["type"] == "Point":
+            return json.dumps(the_geom)
+        elif the_geom["type"] == "polygon" or the_geom["type"] == "Polygon":
+            bbox = zip(*the_geom["coordinates"][0])
+            the_geom = {"type": "point", "coordinates": [(max(bbox[0]) + min(bbox[0])) / 2, (max(bbox[1]) + min(bbox[1])) / 2]}
             return json.dumps(the_geom)
 
 
