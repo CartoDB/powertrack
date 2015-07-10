@@ -167,17 +167,19 @@ class JobManager(object):
     def __init__(self, pt):
         self.pt = pt
 
-    def create(self, from_date, to_date, title, rules):
+    def create(self, from_date, to_date, title, rules, geo_enrichment=True):
         """
         Create a new job in GNIP
         :param from_date: Start timestamp
         :param to_date: End timestamp
         :param title: Title for the job
         :param rules: Powertrack rules. Each rule will be ANDed with geo-enabled filter.
+        :param geo_enrichment: True if you want GNIP's geoenrichment
         :return:
         """
 
-        rules = [{"value": "({value}) (has:geo OR has:profile_geo)".format(value=rule)} for rule in rules]
+        geo_enrichment_rule = "has:geo OR has:profile_geo" if geo_enrichment is True else "has:geo"
+        rules = [{"value": "({value}) ({geo_enrichment_rule})".format(value=rule, geo_enrichment_rule=geo_enrichment_rule)} for rule in rules]
 
         data = {
             "publisher": "twitter",
