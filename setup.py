@@ -19,7 +19,7 @@ def get_packages(package):
 
 setup(
     name='python-powertrack',
-    version='0.1.3',
+    version='0.1.4',
     packages=get_packages('powertrack'),
     install_requires=[
         'requests',
