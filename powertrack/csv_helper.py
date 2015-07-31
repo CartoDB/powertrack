@@ -13,6 +13,11 @@ def get_field(obj, name, default, as_json=False):
     if name in obj:
         field = obj[name]
 
+        try:
+            field = field.replace('\n', ' ').replace('\r', '')
+        except AttributeError:
+            pass
+
         if field is not None:
             field = json.dumps(field) if as_json is True else field
         else:
