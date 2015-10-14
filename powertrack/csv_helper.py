@@ -74,11 +74,14 @@ def get_the_geom(tweet):
             return json.dumps(the_geom)
 
 
-def tweet2csv(tweet=None, category_name=None, category_terms=None):
+def tweet2csv(tweet=None, category_name=None, category_terms=None, columns=None):
     """
     Turn a tweet in json format into a CSV row.
     :param tweet: Tweet in json format. If None, header row will be returned.
-    :return:CSV row
+    :param category_name: Category name to be used in CartoDB (this is typically a number)
+    :param category_terms: Terms used to define the category on CartoDB
+    :param columns: Array of columns to be created in CartoDB's table. None for all columns.
+    :return: CSV row
     """
 
     if tweet is not None:
@@ -91,65 +94,67 @@ def tweet2csv(tweet=None, category_name=None, category_terms=None):
     tweet = tweet or {}
 
     actor = tweet.get("actor", {})
-    generator = tweet.get("generator", {})
     location = tweet.get("location", {})
-    object = tweet.get("object", {})
-    provider = tweet.get("provider", {})
     category = {"name": category_name, "terms": category_terms}
 
     row = {
-        "actor_displayname": get_field(actor, "displayName", ""),
-        "actor_followerscount": get_field(actor, "followersCount", 0),
-        "actor_friendscount": get_field(actor, "friendsCount", 0),
-        "actor_id": get_field(actor, "id", ""),
-        "actor_image": get_field(actor, "image", ""),
-        "actor_languages": get_field(actor, "languages", "", as_json=True),
-        "actor_link": get_field(actor, "link", ""),
-        "actor_links": get_field(actor, "links", "", as_json=True),
-        "actor_listedcount": get_field(actor, "listedCount", 0),
-        "actor_location": get_field(actor, "location", "", as_json=True),
-        "actor_objecttype": get_field(actor, "objectType", ""),
-        "actor_postedtime": get_field(actor, "postedTime", ""),
-        "actor_preferredusername": get_field(actor, "preferredUsername", ""),
-        "actor_statusescount": get_field(actor, "statusesCount", 0),
-        "actor_summary": get_field(actor, "summary", ""),
-        "actor_twittertimezone": get_field(actor, "twitterTimeZone", ""),
-        "actor_utcoffset": get_field(actor, "utcOffset", 0),
-        "actor_verified": get_field(actor, "verified", False),
-        "body": get_field(tweet, "body", ""),
-        "category_name": get_field(category, "name", "category_name"),
-        "category_terms": get_field(category, "terms", "category_terms"),
-        "favoritescount": get_field(tweet, "favoritesCount", 0),
-        "generator_displayname": get_field(generator, "displayName", ""),
-        "generator_link": get_field(generator, "link", ""),
-        "geo": get_field(tweet, "geo", "", as_json=True),
         "the_geom": the_geom,
-        "gnip": get_field(tweet, "gnip", "", as_json=True),
-        "id": get_field(tweet, "id", ""),
-        "inreplyto_link": get_field(tweet, "inReplyTo", "", as_json=True),
-        "link": get_field(tweet, "link", ""),
-        "location_displayname": get_field(location, "displayName", ""),
-        "location_geo":  get_field(location, "geo", "", as_json=True),
-        "location_link":  get_field(location, "link", ""),
-        "location_name":  get_field(location, "name", ""),
-        "location_objecttype":  get_field(location, "objectType", ""),
-        "location_streetaddress":  get_field(location, "streetAddress", ""),
-        "object_id":  get_field(object, "id", ""),
-        "object_link":  get_field(object, "link", ""),
-        "object_objecttype":  get_field(object, "objectType", ""),
-        "object_postedtime":  get_field(object, "postedTime", ""),
-        "object_summary":  get_field(object, "summary", ""),
-        "object_type": get_field(tweet, "objectType", ""),
         "postedtime": get_field(tweet, "postedTime", ""),
-        "provider_displayname": get_field(provider, "displayName", ""),
-        "provider_link":  get_field(provider, "link", ""),
-        "provider_objecttype":  get_field(provider, "objectType", ""),
-        "retweetcount": get_field(tweet, "retweetCount", 0),
-        "twitter_entities": get_field(tweet, "twitter_entities", "", as_json=True),
-        "twitter_filter_level": get_field(tweet, "twitter_filter_level", ""),
-        "twitter_lang": get_field(tweet, "twitter_lang", ""),
-        "verb": get_field(tweet, "verb", ""),
     }
+
+    if category_name:
+        row["category_name"] = get_field(category, "name", "category_name")
+
+    if columns is None or "category_terms" in columns:
+        row["category_terms"] = get_field(category, "terms", "category_terms")
+    if columns is None or "actor_displayname" in columns:
+        row["actor_displayname"] = get_field(actor, "displayName", "")
+    if columns is None or "actor_followerscount" in columns:
+        row["actor_followerscount"] = get_field(actor, "followersCount", 0)
+    if columns is None or "actor_friendscount" in columns:
+        row["actor_friendscount"] = get_field(actor, "friendsCount", 0)
+    if columns is None or "actor_id" in columns:
+        row["actor_id"] = get_field(actor, "id", "")
+    if columns is None or "actor_dispactor_imagelayname" in columns:
+        row["actor_image"] = get_field(actor, "image", "")
+    if columns is None or "actor_listedcount" in columns:
+        row["actor_listedcount"] = get_field(actor, "listedCount", 0)
+    if columns is None or "actor_location" in columns:
+        row["actor_location"] = get_field(actor, "location", "", as_json=True)
+    if columns is None or "actor_postedtime" in columns:
+        row["actor_postedtime"] = get_field(actor, "postedTime", "")
+    if columns is None or "actor_preferredusername" in columns:
+        row["actor_preferredusername"] = get_field(actor, "preferredUsername", "")
+    if columns is None or "actor_statusescount" in columns:
+        row["actor_statusescount"] = get_field(actor, "statusesCount", 0)
+    if columns is None or "actor_summary" in columns:
+        row["actor_summary"] = get_field(actor, "summary", "")
+    if columns is None or "actor_utcoffset" in columns:
+        row["actor_utcoffset"] = get_field(actor, "utcOffset", 0)
+    if columns is None or "actor_verified" in columns:
+        row["actor_verified"] = get_field(actor, "verified", False)
+    if columns is None or "body" in columns:
+        row["body"] = get_field(tweet, "body", "")
+    if columns is None or "favoritescount" in columns:
+        row["favoritescount"] = get_field(tweet, "favoritesCount", 0)
+    if columns is None or "geo" in columns:
+        row["geo"] = get_field(tweet, "geo", "", as_json=True)
+    if columns is None or "actoinreplyto_linkr_displayname" in columns:
+        row["inreplyto_link"] = get_field(tweet, "inReplyTo", "", as_json=True)
+    if columns is None or "link" in columns:
+        row["link"] = get_field(tweet, "link", "")
+    if columns is None or "location_geo" in columns:
+        row["location_geo"] =  get_field(location, "geo", "", as_json=True)
+    if columns is None or "location_name" in columns:
+        row["location_name"] =  get_field(location, "name", "")
+    if columns is None or "object_type" in columns:
+        row["object_type"] = get_field(tweet, "objectType", "")
+    if columns is None or "retweetcount" in columns:
+        row["retweetcount"] = get_field(tweet, "retweetCount", 0)
+    if columns is None or "actor_distwitter_entitiesplayname" in columns:
+        row["twitter_entities"] = get_field(tweet, "twitter_entities", "", as_json=True)
+    if columns is None or "actor_twitter_langdisplayname" in columns:
+        row["twitter_lang"] = get_field(tweet, "twitter_lang", "")
 
     if tweet:
         keys = sorted(row.keys())
