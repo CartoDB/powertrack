@@ -34,20 +34,22 @@ Create a new job:
 start = datetime(2014, 03, 1, 12, 00)
 end = datetime(2014, 03, 1, 12, 05)
 title = "test"
-job = p.jobs.create(start, end, title, ["#lakers", "#celtics"])
+job = p.jobs.create(start, end, title, ["#lakers", "#celtics"], geo_enrichment=True)
 ```
 
-Export tweets to a CSV file named after the job title ("test" in this case) and placed in the folder defined in the config file. Column `category_terms` on CartoDB will be `["#lakers", "#celtics"]`.
+You can also specify which columns you want to have in your CSV file by means of the `column` parameter (default to all available).
+
+Export tweets to a CSV file named after the job title ("test" in this case) and placed in the folder defined in the config file.
 
 If the query includes double quotes, they need to be escaped with a backslash `\"`.
 
 `start` and `end` default to GNIP's Search API 30-day interval.
 
 ```python
-job.export_tweets(1)
+job.export_tweets()
 ```
 
-Column `category_name` on CartoDB will be 1 and a new file will be created.
+A new file will be created in the specified folder.
 
 ### Historical API
 
@@ -105,7 +107,7 @@ jobs[0].export_tweets()
 Create a new job:
 
 ```python
-new_job = p.jobs.create(datetime(2014, 12, 12, 0, 0), datetime(2014, 12, 13, 0, 0), "newjob", ["@nba", "#lakers", "#celtics"])
+new_job = p.jobs.create(datetime(2014, 12, 12, 0, 0), datetime(2014, 12, 13, 0, 0), "newjob", ["@nba", "#lakers", "#celtics"], geo_enrichment=False)
 ```
 
 Params to create() are: start timestamp, end timestamp, unique title for the job, and search terms.
@@ -186,4 +188,23 @@ Now you can export tweets to a CSV file named after the job title ("test" in thi
 
 ```python
 job.export_tweets()
+```
+
+### Category searches
+
+A typical use case for our Powertrack library is when someone wants to make a category torque map out of the tweets. In many cases, each category is defined by a list of simple (words, hashtags, etc.) search terms.
+
+For this particular use case, we have built some helper classes. Just take a look at this example:
+
+```python
+from powertrack.category_helper import Job
+from datetime import datetime
+
+
+job = Job("test_categories")
+
+job.create_category("lakers", terms=["#lakers", "randle"])
+job.create_category("celtics", terms=["#celtics", "ainge"])
+
+job.run(datetime(2016, 6, 9, 5))
 ```

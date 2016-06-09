@@ -94,7 +94,8 @@ class JobManager(object):
         :param start: Start timestamp, defaults to 30 days ago
         :param end: End timestamp, defaults to now
         :param title: Title for the job (file name)
-        :param rule: Powertrack rule, up to 1024 characters, 30 positive clauses, 50 negations. Will be ANDed with geo-enabled filter, so you need reserve room for that.
+        :param rule: Powertrack rule, up to 1024 chars, 30 positive clauses, 50 negations. Will be ANDed with geo-enabled filter,
+                     so you need to reserve room for that.
         :param geo_enrichment: True if you want GNIP's geoenrichment
         :param columns: Array of columns to be created in CartoDB's table. None for all columns.
         :return:
@@ -104,7 +105,7 @@ class JobManager(object):
             query = "({rule}) ({geo_enrichment_rule})".format(rule=rule, geo_enrichment_rule=geo_enrichment_rule)
         else:
             query = geo_enrichment_rule
-        print query
+
         data = {
             "publisher": "twitter",
             "query": query,
