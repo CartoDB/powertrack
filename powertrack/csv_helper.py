@@ -42,44 +42,51 @@ def get_the_geom(tweet):
     except KeyError:
         pass
     else:
-        # Fix twitter's geojson in the geo field
-        lat = the_geom["coordinates"][0]
-        lon = the_geom["coordinates"][1]
-        the_geom["coordinates"][0] = lon
-        the_geom["coordinates"][1] = lat
-        return json.dumps(the_geom)
+        try:
+            # Fix twitter's geojson in the geo field
+            lat = the_geom["coordinates"][0]
+            lon = the_geom["coordinates"][1]
+            the_geom["coordinates"][0] = lon
+            the_geom["coordinates"][1] = lat
+            return json.dumps(the_geom)
+        except (KeyError, TypeError, IndexError):
+            pass
 
     try:
         the_geom = tweet["location"]["geo"]
     except (KeyError, TypeError, IndexError):
         pass
     else:
-        if the_geom["type"] == "point" or the_geom["type"] == "Point":
-            return json.dumps(the_geom)
-        elif the_geom["type"] == "polygon" or the_geom["type"] == "Polygon":
-            bbox = zip(*the_geom["coordinates"][0])
-            the_geom = {"type": "point", "coordinates": [(max(bbox[0]) + min(bbox[0])) / 2, (max(bbox[1]) + min(bbox[1])) / 2]}
-            return json.dumps(the_geom)
+        try:
+            if the_geom["type"] == "point" or the_geom["type"] == "Point":
+                return json.dumps(the_geom)
+            elif the_geom["type"] == "polygon" or the_geom["type"] == "Polygon":
+                bbox = zip(*the_geom["coordinates"][0])
+                the_geom = {"type": "point", "coordinates": [(max(bbox[0]) + min(bbox[0])) / 2, (max(bbox[1]) + min(bbox[1])) / 2]}
+                return json.dumps(the_geom)
+        except (KeyError, TypeError, IndexError):
+            pass
 
     try:
         the_geom = tweet["gnip"]["profileLocations"][0]["geo"]
     except (KeyError, TypeError, IndexError):
         pass
     else:
-        if the_geom["type"] == "point" or the_geom["type"] == "Point":
-            return json.dumps(the_geom)
-        elif the_geom["type"] == "polygon" or the_geom["type"] == "Polygon":
-            bbox = zip(*the_geom["coordinates"][0])
-            the_geom = {"type": "point", "coordinates": [(max(bbox[0]) + min(bbox[0])) / 2, (max(bbox[1]) + min(bbox[1])) / 2]}
-            return json.dumps(the_geom)
+        try:
+            if the_geom["type"] == "point" or the_geom["type"] == "Point":
+                return json.dumps(the_geom)
+            elif the_geom["type"] == "polygon" or the_geom["type"] == "Polygon":
+                bbox = zip(*the_geom["coordinates"][0])
+                the_geom = {"type": "point", "coordinates": [(max(bbox[0]) + min(bbox[0])) / 2, (max(bbox[1]) + min(bbox[1])) / 2]}
+                return json.dumps(the_geom)
+        except (KeyError, TypeError, IndexError):
+            pass
 
 
-def tweet2csv(tweet=None, category_name=None, category_terms=None, columns=None):
+def tweet2csv(tweet=None, columns=None):
     """
     Turn a tweet in json format into a CSV row.
     :param tweet: Tweet in json format. If None, header row will be returned.
-    :param category_name: Category name to be used in CartoDB (this is typically a number)
-    :param category_terms: Terms used to define the category on CartoDB
     :param columns: Array of columns to be created in CartoDB's table. None for all columns.
     :return: CSV row
     """
@@ -95,18 +102,12 @@ def tweet2csv(tweet=None, category_name=None, category_terms=None, columns=None)
 
     actor = tweet.get("actor", {})
     location = tweet.get("location", {})
-    category = {"name": category_name, "terms": category_terms}
 
     row = {
         "the_geom": the_geom,
         "postedtime": get_field(tweet, "postedTime", ""),
     }
 
-    if category_name:
-        row["category_name"] = get_field(category, "name", "category_name")
-
-    if columns is None or "category_terms" in columns:
-        row["category_terms"] = get_field(category, "terms", "category_terms")
     if columns is None or "actor_displayname" in columns:
         row["actor_displayname"] = get_field(actor, "displayName", "")
     if columns is None or "actor_followerscount" in columns:

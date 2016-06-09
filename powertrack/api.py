@@ -21,6 +21,9 @@ class PowerTrack(object):
         self.account_name = config.get('credentials', 'account_name')
         self.username = config.get('credentials', 'username')
         self.password = config.get('credentials', 'password')
+        self.label = config.get('credentials', 'label')
+        self.folder = config.get('output', 'folder')
+        self.num_threads = config.get('output', 'num_threads')
 
         if self.api == HISTORICAL_API:
             self.powertrack_root_url = "https://historical.gnip.com/accounts/{account_name}/".format(account_name=self.account_name)
