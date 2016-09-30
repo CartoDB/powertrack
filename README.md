@@ -18,6 +18,8 @@ pip install git+ssh://git@github.com/CartoDB/powertrack.git
 
 ### Search API
 
+http://support.gnip.com/apis/search_api2.0/
+
 #### Example flow
 
 From a python console:
@@ -34,7 +36,7 @@ Create a new job:
 start = datetime(2014, 03, 1, 12, 00)
 end = datetime(2014, 03, 1, 12, 05)
 title = "test"
-job = p.jobs.create(start, end, title, ["#lakers", "#celtics"], geo_enrichment=True)
+job = p.jobs.create(start, end, title, ["#lakers", "#celtics"])
 ```
 
 You can also specify which columns you want to have in your CSV file by means of the `column` parameter (default to all available).
@@ -53,30 +55,26 @@ A new file will be created in the specified folder.
 
 ### Historical API
 
+http://support.gnip.com/apis/historical_api2.0/
+
 #### Useful methods
 
-Get jobs:
+Get jobs from the server:
 
-```
+```python
 jobs = p.jobs.get()
 ```
 
-Get quote for a job (returns None is job is still being estimated in GNIP):
+Get a single job from the server:
 
 ```python
-jobs[0].get_quote()
+jobs.get(uuid)
 ```
 
-Get full details for a job:
+Refresh a job:
 
 ```python
-jobs.get(job[0].uuid)
-```
-
-Update a job:
-
-```python
-jobs[0].update()
+jobs[0].refresh()
 ```
 
 Get the status (updated from GNIP automatically):
@@ -84,6 +82,11 @@ Get the status (updated from GNIP automatically):
 ```python
 jobs[0].status
 jobs[0].status_message
+```
+
+Get quote for a job (returns None is job is still being estimated in GNIP):
+```python
+jobs[0].get_quote()
 ```
 
 Accept a job (*this costs money!!!*):
@@ -98,7 +101,7 @@ Reject a job:
 jobs[0].reject()
 ```
 
-Export job to CSV:
+Export job to CSV (only if status is "delivered"):
 
 ```python
 jobs[0].export_tweets()
@@ -107,12 +110,12 @@ jobs[0].export_tweets()
 Create a new job:
 
 ```python
-new_job = p.jobs.create(datetime(2014, 12, 12, 0, 0), datetime(2014, 12, 13, 0, 0), "newjob", ["@nba", "#lakers", "#celtics"], geo_enrichment=False)
+new_job = p.jobs.create(datetime(2014, 12, 12, 0, 0), datetime(2014, 12, 13, 0, 0), "newjob", ["@nba", "#lakers", "#celtics"], geo_enrichment=True)
 ```
 
 Params to create() are: start timestamp, end timestamp, unique title for the job, and search terms.
 
-See the rules for the start and end timestamps [here](http://support.gnip.com/apis/historical_api/api_reference.html#Create) (look for "Specifying the Correct Time Window")
+See the rules for the start and end timestamps [here](http://support.gnip.com/apis/historical_api2.0/api_reference.html#Create) (look for "Specifying the Correct Time Window")
 
 #### Example flow
 
@@ -127,28 +130,17 @@ p = PowerTrack(api="historical")  # This is the default API, so p = PowerTrack()
 Add a new job:
 
 ```python
-start = datetime(2014, 03, 1, 12, 00)
-end = datetime(2014, 03, 1, 12, 05)
-title = "test"
-job = p.jobs.create(start, end, title)
+job = p.jobs.create(datetime(2014, 12, 12, 0, 0), datetime(2014, 12, 13, 0, 0), "newjob", ["@nba", "#lakers", "#celtics"], geo_enrichment=False)
 ```
 
 Check status:
 
 ```python
 job.status
-u'open'
+u'quoted'
 ```
 
-Request qoute:
-
-```python
-job.get_quote()
-job.status
-u'estimating'
-```
-
-Check quote (it'll be empty until the status changes):
+Check quote:
 
 ```python
 job.get_quote()

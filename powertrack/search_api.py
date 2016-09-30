@@ -8,7 +8,7 @@ from powertrack.csv_helper import tweet2csv
 
 
 class Job(object):
-    data_url = None
+    data_path = None
 
     def __init__(self, pt, title, job_data, columns=None):
         """
@@ -23,8 +23,8 @@ class Job(object):
         self.file_name = os.path.join(pt.folder, "{filename}.csv".format(filename=title))
         self.request_data = job_data
         self.columns = columns
-        self.data_url = "search/{label}.json".format(label=pt.label)
-        self.count_url = "search/{label}/counts.json".format(label=pt.label)
+        self.data_path = "search/30day/accounts/{account_name}/{label}.json".format(account_name=pt.account_name, label=pt.label)
+        self.count_path = "search/30day/accounts/{account_name}/{label}/counts.json".format(account_name=pt.account_name, label=pt.label)
 
     def export_tweets(self, append=False):
         """
@@ -50,7 +50,8 @@ class Job(object):
             if next_page is not True:
                 self.request_data.update({"next": next_page})
 
-            r = self.pt.post(self.data_url, self.request_data)
+            r = self.pt.post(self.data_path, self.request_data)
+            print r.text
 
             if r.status_code != requests.codes.ok:
                 try:
@@ -79,35 +80,28 @@ class Job(object):
         Gets data from GNIP and estimates tweet count for these rules
         """
         self.request_data["bucket"] = "day"
-        r = self.pt.post(self.count_url, self.request_data)
+        r = self.pt.post(self.count_path, self.request_data)
 
-        return sum([hour["count"] for hour in r.json()["results"]])
+        return r.json()["totalResults"]
 
 
 class JobManager(object):
     def __init__(self, pt):
         self.pt = pt
 
-    def create(self, start=None, end=None, title="twitter_search_result", rule=None, geo_enrichment=True, columns=None):
+    def create(self, start=None, end=None, title="twitter_search_result", rule=None, columns=None):
         """
         Create a new job definition
         :param start: Start timestamp, defaults to 30 days ago
         :param end: End timestamp, defaults to now
         :param title: Title for the job (file name)
-        :param rule: Powertrack rule, up to 1024 chars, 30 positive clauses, 50 negations. Will be ANDed with geo-enabled filter,
-                     so you need to reserve room for that.
-        :param geo_enrichment: True if you want GNIP's geoenrichment
+        :param rule: Powertrack rule, up to 2048 chars, including all operators and spaces, with no single term exceeding 128 characters. Will be ANDed with geo-enabled filter, so you need to reserve room for that.
         :param columns: Array of columns to be created in CartoDB's table. None for all columns.
         :return:
         """
-        geo_enrichment_rule = "has:geo OR has:profile_geo" if geo_enrichment is True else "has:geo"
-        if rule is not None:
-            query = "({rule}) ({geo_enrichment_rule})".format(rule=rule, geo_enrichment_rule=geo_enrichment_rule)
-        else:
-            query = geo_enrichment_rule
+        query = "({value}) (has:geo)".format(value=rule) if rule is not None else "has:geo"
 
         data = {
-            "publisher": "twitter",
             "query": query,
             "maxResults": 500
         }

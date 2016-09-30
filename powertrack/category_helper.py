@@ -1,10 +1,16 @@
 import os
+import warnings
 from datetime import datetime
 
 from powertrack.api import SEARCH_API, PowerTrack
 
 
-SEARCH_API_MAX_POSITIVE_CLAUSES = 28  # GNIP's max is 30 and we need 2 to enforce geo availability
+SEARCH_API_MAX_CLAUSE_LENGTH = 128
+SEARCH_API_MAX_RULE_LENGTH = 2048
+
+
+class CategoryException(Exception):
+    pass
 
 
 class Category(object):
@@ -16,9 +22,15 @@ class Category(object):
                       positive Powertrack clause, and will be OR'ed with the rest
         :return:
         """
-        # TODO: verify we're not hitting the max clause number or the max of characters allowed per request
         self.name = name
         self.terms = terms
+
+        for term in self.terms:
+            if len(self.term) > SEARCH_API_MAX_CLAUSE_LENGTH:
+                warnings.warn("{term} exceeds Search API length for a single positive clause".format(term=term))
+
+        if len("({value}) (has:geo)".format(query=self.rule)) > SEARCH_API_MAX_RULE_LENGTH:
+            warnings.warn("Category definition exceeds the length of a single Search API request")
 
     @property
     def rule(self):
@@ -70,7 +82,6 @@ class Job(object):
         :param api: Either SEARCH_API or HISTORICAL_API
         :return: Ruleset as an array of rules, each rule being the combination of one or more individual category rules
         """
-        # TODO: verify we're not hitting the max clause number or the max of characters allowed per request
         # TODO: add support for the historical API (limits are more relaxed there)
         ruleset = []
 
@@ -78,13 +89,12 @@ class Job(object):
             clauses_in_current_rule = 0
             rule = ''
             for category in self.categories:
-                if (clauses_in_current_rule + len(category.terms)) > SEARCH_API_MAX_POSITIVE_CLAUSES:
-                    ruleset.append(rule[4:])  # Remove first " OR "
-                    clauses_in_current_rule = 0
-                    rule = ''
                 rule += " OR " + category.rule
                 clauses_in_current_rule += len(category.terms)
             ruleset.append(rule[4:])  # Remove first " OR "
+
+        if len("({value}) (has:geo)".format(query=ruleset)) > SEARCH_API_MAX_RULE_LENGTH:
+            warnings.warn("Category set definition exceeds the length of a single Search API request")
 
         return ruleset
 
@@ -102,13 +112,12 @@ class Job(object):
 
         return '', ''
 
-    def run(self, start, end=None, title=None, geo_enrichment=False, columns=None, api=SEARCH_API):
+    def run(self, start, end=None, title=None, columns=None, api=SEARCH_API):
         """
         Run the Powertrack job to fetch the tweets, scan the resulting file so that categories can be assigned and create the final tweet file
         :param start: Start timestamp
         :param end: End timestamp, defaults to now
         :param title: Title to be used as the file name (defaults to Job's name)
-        :param geo_enrichment: True if you want GNIP's geoenrichment, defaults to False
         :param columns: Array of columns to be created in CartoDB's table. None for all columns.
         :param api: Either SEARCH_API or HISTORICAL_API
         :return:
@@ -122,7 +131,7 @@ class Job(object):
         pt = PowerTrack(api=api)
 
         for i, rule in enumerate(self.get_ruleset(api)):
-            new_job = pt.jobs.create(start, end, title + "_tmp", rule, geo_enrichment, columns)
+            new_job = pt.jobs.create(start, end, title + "_tmp", rule, columns)
             new_job.export_tweets(append=False if i == 0 else True)
 
         with open(os.path.join(pt.folder, title + "_tmp.csv")) as tmp_file:

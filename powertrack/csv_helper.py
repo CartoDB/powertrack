@@ -145,9 +145,9 @@ def tweet2csv(tweet=None, columns=None):
     if columns is None or "link" in columns:
         row["link"] = get_field(tweet, "link", "")
     if columns is None or "location_geo" in columns:
-        row["location_geo"] =  get_field(location, "geo", "", as_json=True)
+        row["location_geo"] = get_field(location, "geo", "", as_json=True)
     if columns is None or "location_name" in columns:
-        row["location_name"] =  get_field(location, "name", "")
+        row["location_name"] = get_field(location, "name", "")
     if columns is None or "object_type" in columns:
         row["object_type"] = get_field(tweet, "objectType", "")
     if columns is None or "retweetcount" in columns:

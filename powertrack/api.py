@@ -26,10 +26,10 @@ class PowerTrack(object):
         self.num_threads = config.get('output', 'num_threads')
 
         if self.api == HISTORICAL_API:
-            self.powertrack_root_url = "https://historical.gnip.com/accounts/{account_name}/".format(account_name=self.account_name)
+            self.powertrack_root_url = "https://gnip-api.gnip.com/"
             self.jobs = HistoricalAPIJobManager(self)
         elif self.api == SEARCH_API:
-            self.powertrack_root_url = "https://search.gnip.com/accounts/{account_name}/".format(account_name=self.account_name)
+            self.powertrack_root_url = "https://gnip-api.twitter.com/"
             self.jobs = SearchAPIJobManager(self)
 
     def build_url(self, path):
@@ -39,15 +39,6 @@ class PowerTrack(object):
         :return:
         """
         return urlparse.urljoin(self.powertrack_root_url, path)
-
-    def build_job_url(self, uuid):
-        """
-        Build GNIP API URL for a job
-        :param uuid: Job's UUID
-        :return: URL
-        """
-        if self.api == HISTORICAL_API:
-            return urlparse.urljoin(self.powertrack_root_url, "publishers/twitter/historical/track/jobs/{uuid}.json)".format(uuid=uuid))
 
     def get(self, path):
         """
@@ -68,11 +59,12 @@ class PowerTrack(object):
         url = self.build_url(path)
         return requests.post(url, data=json.dumps(data), auth=(self.username, self.password), headers={'Content-Type': 'application/json'})
 
-    def put(self, url, data):
+    def put(self, path, data):
         """
         PUT request to a full URL with basic authentication
-        :param url: Absolute URL
+        :param path: Relative path
         :param data: PUT body data
         :return: Response
         """
+        url = self.build_url(path)
         return requests.put(url, data=json.dumps(data), auth=(self.username, self.password), headers={'Content-Type': 'application/json'})
