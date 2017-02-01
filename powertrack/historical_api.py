@@ -24,6 +24,7 @@ class Job(object):
     _quote = None
     _status = None
     _status_message = None
+    _uuid = None
     data_url = None
 
     def __init__(self, pt, uuid=None, job_data=None):
@@ -38,19 +39,23 @@ class Job(object):
 
         if uuid is not None:
             self.uuid = uuid
-            self.job_url = self.build_url(self.uuid)
+            self.job_url = self.build_url()
 
         if job_data is not None:
             self.update_fields(job_data)
 
+    @property
+    def uuid(self):
+        return self._uuid
+
+    @uuid.setter
+    def uuid(self, value):
+        self._uuid = value
+        self.job_url = self.build_job_url(self.uuid, self.pt.account_name)
+
     @staticmethod
-    def build_url(uuid):
-        """
-        Get URL from URL
-        :param uuid: UUID
-        :return: URL
-        """
-        return "publishers/twitter/historical/track/jobs/{uuid}.json)".format(uuid=uuid)
+    def build_job_url(uuid, account_name):
+        return "historical/powertrack/accounts/{account_name}/publishers/twitter/jobs/{uuid}.json".format(account_name=account_name, uuid=uuid) if uuid is not None else None
 
     @staticmethod
     def build_uuid(url):
@@ -115,7 +120,7 @@ class Job(object):
         """
         Call GNIP and get latest info for this job. Update the job accordingly.
         """
-        r = self.pt.get(self.pt.build_job_url(self.uuid))
+        r = self.pt.get(self.job_url)
         self.update_fields(r.json())
 
     @property
@@ -123,8 +128,7 @@ class Job(object):
         """
         Return updated status from GNIP
         """
-        r = self.pt.get(self.pt.build_job_url(self.uuid))
-        self.update_fields(r.json())
+        self.update()
         return self._status
 
     @property
@@ -132,8 +136,7 @@ class Job(object):
         """
         Return updated status message from GNIP
         """
-        r = self.pt.get(self.pt.build_job_url(self.uuid))
-        self.update_fields(r.json())
+        self.update()
         return self._status_message
 
     def get_quote(self):
@@ -150,11 +153,8 @@ class Job(object):
         """
         Generate CSV file from this job's data files (if job is completed in GNIP)
         """
-        if self.data_url is None:
-            self.update()
-
-        if self.data_url is None:
-            return None
+        if self._status != "delivered":
+            return False
 
         r = self.pt.get(self.data_url)
         urls = r.json().get("urlList")
@@ -162,10 +162,13 @@ class Job(object):
                        os.path.join(config.get('output', 'folder'), "{filename}.csv".format(filename=self.title)),
                        int(config.get('output', 'num_threads')))
 
+        return True
+
 
 class JobManager(object):
     def __init__(self, pt):
         self.pt = pt
+        self.jobs_path = "historical/powertrack/accounts/{account_name}/publishers/twitter/jobs.json".format(account_name=self.pt.account_name)
 
     def create(self, from_date, to_date, title, rules, geo_enrichment=True):
         """
@@ -173,11 +176,10 @@ class JobManager(object):
         :param from_date: Start timestamp
         :param to_date: End timestamp
         :param title: Title for the job
-        :param rules: Powertrack rules. Each rule will be ANDed with geo-enabled filter.
+        :param rules: Powertrack rules. Each rule will be ANDed with geo-enabled filter
         :param geo_enrichment: True if you want GNIP's geoenrichment
         :return:
         """
-
         geo_enrichment_rule = "has:geo OR has:profile_geo" if geo_enrichment is True else "has:geo"
         rules = [{"value": "({value}) ({geo_enrichment_rule})".format(value=rule, geo_enrichment_rule=geo_enrichment_rule)} for rule in rules]
 
@@ -191,7 +193,7 @@ class JobManager(object):
             "rules": rules,
         }
 
-        r = self.pt.post("jobs", data)
+        r = self.pt.post(self.jobs_path, data)
         return Job(self.pt, job_data=r.json())
 
     def get(self, uuid=None):
@@ -201,10 +203,10 @@ class JobManager(object):
         :return: Job or jobs
         """
         if uuid is None:
-            r = self.pt.get("jobs")
+            r = self.pt.get(self.jobs_path)
             return [Job(self.pt, job_data=job_data) for job_data in r.json()["jobs"]]
         else:
-            r = self.pt.get(self.pt.build_job_url(uuid))
+            r = Job.build_job_url(uuid, self.pt.account_name)
             return Job(self.pt, job_data=r.json())
 
 
@@ -213,7 +215,7 @@ class GetRequestThread(Thread):
     These threads will get a job data file, convert tweets to CSV and put them in a writer queue.
     The number of these threads come from config file.
     """
-    def __init__ (self, url_q, writer_q):
+    def __init__(self, url_q, writer_q):
         self.url_q = url_q
         self.writer_q = writer_q
         super(GetRequestThread, self).__init__()
@@ -244,7 +246,7 @@ class WriteTweetThread(Thread):
     """
     This thread (only one!!!) will take the CSV tweets from a writer queue and put them into the CSV file.
     """
-    def __init__ (self, csv_writer, writer_q):
+    def __init__(self, csv_writer, writer_q):
         self.csv_writer = csv_writer
         self.writer_q = writer_q
         super(WriteTweetThread, self).__init__()
