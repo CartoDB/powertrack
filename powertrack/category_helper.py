@@ -26,7 +26,7 @@ class Category(object):
         self.terms = terms
 
         for term in self.terms:
-            if len(self.term) > SEARCH_API_MAX_CLAUSE_LENGTH:
+            if len(term) > SEARCH_API_MAX_CLAUSE_LENGTH:
                 warnings.warn("{term} exceeds Search API length for a single positive clause".format(term=term))
 
         if len("({value}) (has:geo)".format(query=self.rule)) > SEARCH_API_MAX_RULE_LENGTH:
