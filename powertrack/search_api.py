@@ -51,7 +51,6 @@ class Job(object):
                 self.request_data.update({"next": next_page})
 
             r = self.pt.post(self.data_path, self.request_data)
-            print r.text
 
             if r.status_code != requests.codes.ok:
                 try:

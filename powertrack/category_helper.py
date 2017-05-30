@@ -29,7 +29,7 @@ class Category(object):
             if len(term) > SEARCH_API_MAX_CLAUSE_LENGTH:
                 warnings.warn("{term} exceeds Search API length for a single positive clause".format(term=term))
 
-        if len("({value}) (has:geo)".format(query=self.rule)) > SEARCH_API_MAX_RULE_LENGTH:
+        if len("({query}) (has:geo)".format(query=self.rule)) > SEARCH_API_MAX_RULE_LENGTH:
             warnings.warn("Category definition exceeds the length of a single Search API request")
 
     @property
@@ -93,7 +93,7 @@ class Job(object):
                 clauses_in_current_rule += len(category.terms)
             ruleset.append(rule[4:])  # Remove first " OR "
 
-        if len("({value}) (has:geo)".format(query=ruleset)) > SEARCH_API_MAX_RULE_LENGTH:
+        if len("({query}) (has:geo)".format(query=ruleset)) > SEARCH_API_MAX_RULE_LENGTH:
             warnings.warn("Category set definition exceeds the length of a single Search API request")
 
         return ruleset
